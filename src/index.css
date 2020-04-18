@@ -11,3 +11,9 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.diffMarker {
+  background: #fff677;
+  position: absolute;
+  z-index: 20;
+}
