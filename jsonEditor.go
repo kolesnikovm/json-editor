@@ -30,7 +30,7 @@ func openBrowser(url string) {
 }
 
 func main() {
-	port := flag.String("port", "3000", "listen port")
+	port := flag.String("port", "3010", "listen port")
 	flag.Parse()
 
 	box := packr.New("build", "./build")
