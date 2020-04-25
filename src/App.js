@@ -23,7 +23,7 @@ require("ace-builds/webpack-resolver")
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    height: '100%',
+    height: 'calc(100% - 100px);',
     width: '100%',
     position: 'fixed',
     border: '1px solid lightgray',

@@ -8,7 +8,7 @@ import (
 	"os/exec"
 	"runtime"
 
-	"github.com/gobuffalo/packr/v2"
+	"github.com/gobuffalo/packr"
 )
 
 func openBrowser(url string) {
@@ -33,7 +33,7 @@ func main() {
 	port := flag.String("port", "3010", "listen port")
 	flag.Parse()
 
-	box := packr.New("build", "./build")
+	box := packr.NewBox("./build")
 	http.Handle("/", http.FileServer(box))
 
 	openBrowser("http://localhost:" + *port)
