@@ -8,6 +8,8 @@ import Grid from '@material-ui/core/Grid'
 import ButtonGroup from '@material-ui/core/ButtonGroup'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
 import Switch from '@material-ui/core/Switch'
+import MenuItem from '@material-ui/core/MenuItem'
+import Select from '@material-ui/core/Select'
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faIndent, faAlignJustify } from '@fortawesome/free-solid-svg-icons'
@@ -21,6 +23,11 @@ const Range = ace.require("ace/range").Range
 require("ace-builds/webpack-resolver")
 
 
+const languages = [
+  "json",
+  "xml",
+]
+
 const useStyles = makeStyles((theme) => ({
   root: {
     height: 'calc(100% - 100px);',
@@ -33,6 +40,7 @@ const useStyles = makeStyles((theme) => ({
   },
   buttonGroup: {
     marginLeft: theme.spacing(4),
+    height: '36px',
   },
   toolbar: {
     padding: 0,
@@ -59,6 +67,11 @@ const useStyles = makeStyles((theme) => ({
     color: 'grey',
     margin: theme.spacing(0, 1, 0, 0),
   },
+  selector: {
+    float: 'right',
+    color: 'white',
+    margin: '3px 16px 0 0',
+  }
 }))
 
 
@@ -71,13 +84,14 @@ export default function App() {
   const [cursor2, setCursor2] = React.useState({ row: 0, column: 0 })
 
   const [diffMode, setDiffMode] = React.useState(window.localStorage.getItem('diffMode') === 'true')
+  const [mode, setMode] = React.useState(window.localStorage.getItem('mode'))
 
   const refContainer = React.useRef()
 
   React.useEffect(() => {
     const node = refContainer.current
     var Split = require("ace-builds/src-noconflict/ext-split").Split
-    split.current = new Split(node, "ace/theme/github", 2)
+    split.current = new Split(node, "ace/theme/xcode", 2)
 
 
     var editorL = split.current.getEditor(0)
@@ -127,6 +141,13 @@ export default function App() {
       window.localStorage.setItem(editorR.id, JSON.stringify(sessionToJSON(editorR.getSession())))
     })
   }, [])
+
+React.useEffect(() => {
+  split.current.getEditor(0).session.setMode("ace/mode/"+mode)
+  split.current.getEditor(1).session.setMode("ace/mode/"+mode)
+
+  window.localStorage.setItem('mode', mode)
+}, [mode])
 
   const sessionToJSON = (session) => {
     return {
@@ -289,21 +310,30 @@ const handleDiff = React.useCallback(
                 label="Diff mode"
                 className={classes.switch}
               />
+              <Select
+                className={classes.selector}
+                value={mode}
+                onChange={event => setMode(event.target.value)}
+              >
+                {languages.map(language => (
+                  <MenuItem value={language}>{language}</MenuItem>
+                ))}
+              </Select>
             </Grid>
             <Grid item xs={6}>
               <ButtonGroup variant="text" className={classes.buttonGroup}>
                 <Button className={classes.button} onClick={handleFormat(0)}><FontAwesomeIcon icon={faIndent} size='lg' /></Button>
                 <Button className={classes.button} onClick={handleMinify(0)}><FontAwesomeIcon icon={faAlignJustify} size='lg' /></Button>
-                <Button className={classes.button} onClick={handleEscape(0)}>escape</Button>
-                <Button className={classes.button} onClick={handleUnescape(0)}>unescape</Button>
+                {mode === 'json' && <Button className={classes.button} onClick={handleEscape(0)}>escape</Button>}
+                {mode === 'json' && <Button className={classes.button} onClick={handleUnescape(0)}>unescape</Button>}
               </ButtonGroup>
             </Grid>
             <Grid item xs={6}>
               <ButtonGroup variant="text" className={classes.buttonGroup}>
                 <Button className={classes.button} onClick={handleFormat(1)}><FontAwesomeIcon icon={faIndent} size='lg' /></Button>
                 <Button className={classes.button} onClick={handleMinify(1)}><FontAwesomeIcon icon={faAlignJustify} size='lg' /></Button>
-                <Button className={classes.button} onClick={handleEscape(1)}>escape</Button>
-                <Button className={classes.button} onClick={handleUnescape(1)}>unescape</Button>
+                {mode === 'json' && <Button className={classes.button} onClick={handleEscape(1)}>escape</Button>}
+                {mode === 'json' && <Button className={classes.button} onClick={handleUnescape(1)}>unescape</Button>}
               </ButtonGroup>
             </Grid>
           </Grid>
