@@ -22,6 +22,7 @@ const ace = require('ace-builds/src-noconflict/ace')
 const Range = ace.require("ace/range").Range
 require("ace-builds/webpack-resolver")
 
+var format = require('xml-formatter')
 
 const languages = [
   "json",
@@ -227,18 +228,34 @@ const handleDiff = React.useCallback(
 
   const handleFormat = (id) => () => {
     var editor = split.current.getEditor(id)
-    var jsonValue = editor.getValue()
+    var value = editor.getValue()
+    var formattedValue
 
-    try {
-      jsonValue = JSON.parse(jsonValue)
-    } catch (error) {
-      console.log('Can\'t escape json')
-      return
+    switch (mode) {
+      case 'json':
+        try {
+          formattedValue = JSON.stringify(JSON.parse(value), null, 2)
+        } catch (error) {
+          console.log('Can\'t escape json')
+          return
+        }
+        break
+      case 'xml':
+        try {
+          formattedValue = format(value, {
+            collapseContent: true, 
+          })
+        } catch (error) {
+          console.log('Can\'t parse xml')
+          return
+        }
+        break
+      default:
+        console.log('Wrong mode' + mode)
+        return
     }
 
-    var stringValue = JSON.stringify(jsonValue, null, 2)
-
-    editor.setValue(stringValue)
+    editor.setValue(formattedValue)
     editor.selection.clearSelection()
   }
 
@@ -323,7 +340,7 @@ const handleDiff = React.useCallback(
             <Grid item xs={6}>
               <ButtonGroup variant="text" className={classes.buttonGroup}>
                 <Button className={classes.button} onClick={handleFormat(0)}><FontAwesomeIcon icon={faIndent} size='lg' /></Button>
-                <Button className={classes.button} onClick={handleMinify(0)}><FontAwesomeIcon icon={faAlignJustify} size='lg' /></Button>
+                {mode === 'json' && <Button className={classes.button} onClick={handleMinify(0)}><FontAwesomeIcon icon={faAlignJustify} size='lg' /></Button>}
                 {mode === 'json' && <Button className={classes.button} onClick={handleEscape(0)}>escape</Button>}
                 {mode === 'json' && <Button className={classes.button} onClick={handleUnescape(0)}>unescape</Button>}
               </ButtonGroup>
@@ -331,7 +348,7 @@ const handleDiff = React.useCallback(
             <Grid item xs={6}>
               <ButtonGroup variant="text" className={classes.buttonGroup}>
                 <Button className={classes.button} onClick={handleFormat(1)}><FontAwesomeIcon icon={faIndent} size='lg' /></Button>
-                <Button className={classes.button} onClick={handleMinify(1)}><FontAwesomeIcon icon={faAlignJustify} size='lg' /></Button>
+                {mode === 'json' && <Button className={classes.button} onClick={handleMinify(1)}><FontAwesomeIcon icon={faAlignJustify} size='lg' /></Button>}
                 {mode === 'json' && <Button className={classes.button} onClick={handleEscape(1)}>escape</Button>}
                 {mode === 'json' && <Button className={classes.button} onClick={handleUnescape(1)}>unescape</Button>}
               </ButtonGroup>
