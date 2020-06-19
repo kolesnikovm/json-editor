@@ -1,6 +1,6 @@
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-GOOS=windows ~/go/bin/packr build -o json-editor.exe jsonEditor.go
+GOOS=windows ~/go/bin/packr build
 
 ## Available Scripts
 
