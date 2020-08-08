@@ -23,6 +23,7 @@ const Range = ace.require("ace/range").Range
 require("ace-builds/webpack-resolver")
 
 var format = require('xml-formatter')
+var stringify = require('json-stable-stringify')
 
 const languages = [
   "json",
@@ -316,6 +317,23 @@ const handleDiff = React.useCallback(
     setDiffMode(!diffMode)
   }
 
+  const handleSort = (id) => () => {
+    var editor = split.current.getEditor(id)
+    var jsonValue = editor.getValue()
+
+    try {
+      jsonValue = JSON.parse(jsonValue)
+    } catch (error) {
+      console.log('Can\'t sort json')
+      return
+    }
+
+    var stringValue = stringify(jsonValue, {space: 2})
+
+    editor.setValue(stringValue)
+    editor.selection.clearSelection()
+  }
+
   return (
     <div>
       <AppBar position="static">
@@ -343,6 +361,7 @@ const handleDiff = React.useCallback(
                 {mode === 'json' && <Button className={classes.button} onClick={handleMinify(0)}><FontAwesomeIcon icon={faAlignJustify} size='lg' /></Button>}
                 {mode === 'json' && <Button className={classes.button} onClick={handleEscape(0)}>escape</Button>}
                 {mode === 'json' && <Button className={classes.button} onClick={handleUnescape(0)}>unescape</Button>}
+                {mode === 'json' && <Button className={classes.button} onClick={handleSort(0)}>sort</Button>}
               </ButtonGroup>
             </Grid>
             <Grid item xs={6}>
@@ -351,6 +370,7 @@ const handleDiff = React.useCallback(
                 {mode === 'json' && <Button className={classes.button} onClick={handleMinify(1)}><FontAwesomeIcon icon={faAlignJustify} size='lg' /></Button>}
                 {mode === 'json' && <Button className={classes.button} onClick={handleEscape(1)}>escape</Button>}
                 {mode === 'json' && <Button className={classes.button} onClick={handleUnescape(1)}>unescape</Button>}
+                {mode === 'json' && <Button className={classes.button} onClick={handleSort(1)}>sort</Button>}
               </ButtonGroup>
             </Grid>
           </Grid>
