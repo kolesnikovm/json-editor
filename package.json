@@ -14,9 +14,11 @@
     "ace-builds": "^1.4.9",
     "diff-match-patch": "^1.0.4",
     "json-stable-stringify": "^1.0.1",
+    "minify-xml": "^3.4.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-scripts": "3.4.1",
+    "underscore": "^1.13.4",
     "xml-formatter": "^2.1.0"
   },
   "scripts": {

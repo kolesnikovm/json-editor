@@ -24,6 +24,8 @@ require("ace-builds/webpack-resolver")
 
 var format = require('xml-formatter')
 var stringify = require('json-stable-stringify')
+const minifyXML = require("minify-xml").minify;
+var underscore = require('underscore');
 
 const languages = [
   "json",
@@ -262,52 +264,102 @@ const handleDiff = React.useCallback(
 
   const handleMinify = (id) => () => {
     var editor = split.current.getEditor(id)
-    var jsonValue = editor.getValue()
+    var value = editor.getValue()
+    var minifiedValue
 
-    try {
-      jsonValue = JSON.parse(jsonValue)
-    } catch (error) {
-      console.log('Can\'t escape json')
-      return
+    switch (mode) {
+      case 'json':
+        try {
+          value = JSON.parse(value)
+        } catch (error) {
+          console.log('Can\'t escape json')
+          return
+        }
+        minifiedValue = JSON.stringify(value, null, 0)
+        break
+    case 'xml':
+        try {
+          minifiedValue = minifyXML(value)
+        } catch (error) {
+          console.log('Can\'t parse xml')
+          return
+        }
+        break
+      default:
+        console.log('Wrong mode' + mode)
+        return
     }
 
-    var stringValue = JSON.stringify(jsonValue, null, 0)
-
-    editor.setValue(stringValue)
+    editor.setValue(minifiedValue)
     editor.selection.clearSelection()
   }
 
   const handleEscape = (id) => () => {
     var editor = split.current.getEditor(id)
-    var jsonValue = editor.getValue().replace(/^(\r?\n)+|(\r?\n)+$/g, '')
+    var escapedValue
+    
 
-    try {
-      JSON.parse(jsonValue)
-    } catch (error) {
-      console.log('Can\'t escape json')
-      return
+    switch (mode) {
+      case 'json':
+        var jsonValue = editor.getValue().replace(/^(\r?\n)+|(\r?\n)+$/g, '')
+        try {
+          JSON.parse(jsonValue)
+        } catch (error) {
+          console.log('Can\'t escape json')
+          return
+        }
+        escapedValue = JSON.stringify(jsonValue)
+        escapedValue = escapedValue.substring(1, escapedValue.length - 1)
+        break
+      case 'xml':
+        var xmlValue = editor.getValue()
+        try {
+          escapedValue = underscore.escape(xmlValue)
+        } catch (error) {
+          console.log('Can\'t escape xml')
+          return
+        }
+        break
+      default:
+        console.log('Wrong mode' + mode)
+        return
     }
 
-    var stringValue = JSON.stringify(jsonValue)
-    stringValue = stringValue.substring(1, stringValue.length - 1)
-    editor.setValue(stringValue)
+    editor.setValue(escapedValue)
     editor.selection.clearSelection()
   } 
 
   const handleUnescape = (id) => () => {
     var editor = split.current.getEditor(id)
-    var stringValue = '"' + editor.getValue().replace(/^(\r?\n)+|(\r?\n)+$/g, '') + '"'
-    console.log(stringValue)
+    var unescapedValue
 
-    try {
-      var parsedJson = JSON.parse(JSON.parse(stringValue))
-    } catch (error) {
-      console.log('Can\'t unescape json')
-      return
+    switch (mode) {
+      case 'json':
+        var stringValue = '"' + editor.getValue().replace(/^(\r?\n)+|(\r?\n)+$/g, '') + '"'
+        console.log(stringValue)
+        try {
+          unescapedValue = JSON.parse(JSON.parse(stringValue))
+        } catch (error) {
+          console.log('Can\'t unescape json')
+          return
+        }
+        unescapedValue = JSON.stringify(unescapedValue)
+        break
+      case 'xml':
+        var xmlValue = editor.getValue()
+        try {
+          unescapedValue = underscore.unescape(xmlValue)
+        } catch (error) {
+          console.log('Can\'t unescape xml')
+          return
+        }
+        break
+      default:
+        console.log('Wrong mode' + mode)
+        return
     }
 
-    parsedJson = JSON.stringify(parsedJson)
-    editor.setValue(parsedJson)
+    editor.setValue(unescapedValue)
     editor.selection.clearSelection()
   }
 
@@ -334,12 +386,18 @@ const handleDiff = React.useCallback(
     editor.selection.clearSelection()
   }
 
+  const clearCache = () => () => {
+    console.log("Clear cache")
+    window.localStorage.clear()
+  }
+ 
   return (
     <div>
       <AppBar position="static">
         <Toolbar variant="dense" className={classes.toolbar}>
           <Grid container spacing={0}>
             <Grid item xs={12}>
+              <Button className={classes.button} onClick={clearCache()}>Clear Cache</Button>
               <FormControlLabel
                 control={<Switch checked={diffMode} onChange={handleDiffMode} />}
                 label="Diff mode"
@@ -358,18 +416,18 @@ const handleDiff = React.useCallback(
             <Grid item xs={6}>
               <ButtonGroup variant="text" className={classes.buttonGroup}>
                 <Button className={classes.button} onClick={handleFormat(0)}><FontAwesomeIcon icon={faIndent} size='lg' /></Button>
-                {mode === 'json' && <Button className={classes.button} onClick={handleMinify(0)}><FontAwesomeIcon icon={faAlignJustify} size='lg' /></Button>}
-                {mode === 'json' && <Button className={classes.button} onClick={handleEscape(0)}>escape</Button>}
-                {mode === 'json' && <Button className={classes.button} onClick={handleUnescape(0)}>unescape</Button>}
+                <Button className={classes.button} onClick={handleMinify(0)}><FontAwesomeIcon icon={faAlignJustify} size='lg' /></Button>
+                <Button className={classes.button} onClick={handleEscape(0)}>escape</Button>
+                <Button className={classes.button} onClick={handleUnescape(0)}>unescape</Button>
                 {mode === 'json' && <Button className={classes.button} onClick={handleSort(0)}>sort</Button>}
               </ButtonGroup>
             </Grid>
             <Grid item xs={6}>
               <ButtonGroup variant="text" className={classes.buttonGroup}>
                 <Button className={classes.button} onClick={handleFormat(1)}><FontAwesomeIcon icon={faIndent} size='lg' /></Button>
-                {mode === 'json' && <Button className={classes.button} onClick={handleMinify(1)}><FontAwesomeIcon icon={faAlignJustify} size='lg' /></Button>}
-                {mode === 'json' && <Button className={classes.button} onClick={handleEscape(1)}>escape</Button>}
-                {mode === 'json' && <Button className={classes.button} onClick={handleUnescape(1)}>unescape</Button>}
+                <Button className={classes.button} onClick={handleMinify(1)}><FontAwesomeIcon icon={faAlignJustify} size='lg' /></Button>
+                <Button className={classes.button} onClick={handleEscape(1)}>escape</Button>
+                <Button className={classes.button} onClick={handleUnescape(1)}>unescape</Button>
                 {mode === 'json' && <Button className={classes.button} onClick={handleSort(1)}>sort</Button>}
               </ButtonGroup>
             </Grid>
