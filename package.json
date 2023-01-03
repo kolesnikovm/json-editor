@@ -17,7 +17,7 @@
     "minify-xml": "^3.4.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
-    "react-scripts": "3.4.1",
+    "react-scripts": "5.0.1",
     "underscore": "^1.13.4",
     "xml-formatter": "^2.1.0"
   },
